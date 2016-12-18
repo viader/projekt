@@ -53,8 +53,11 @@ public class CzatListAdapter extends BaseAdapter {
 
         CzatListResponseDetails chat = chats.get(position);
         holder.nameTv.setText(chat.getName());
-        holder.numberUserTv.setText(String.valueOf(chat.getMaxUsersNumber()));
-        holder.distance.setText(String.valueOf(distance()));
+        holder.numberUserTv.setText("Użytkowników " + String.valueOf(chat.getMaxUsersNumber()));
+        holder.distance.setText(String.valueOf(distance(App.getInstance().getMyPosition().latitude,
+                App.getInstance().getMyPosition().longitude,
+                chat.getLatitude(),
+                chat.getLongitude())) + " metrów");
         return convertView;
     }
 
@@ -71,7 +74,7 @@ public class CzatListAdapter extends BaseAdapter {
         }
     }
 
-    private float distance(long latitudeStart, long longitudeStart, long latitudeStop, long longitudeStop){
+    private double distance(double latitudeStart, double longitudeStart, double latitudeStop, double longitudeStop) {
         Location locationA = new Location("point A");
 
         locationA.setLatitude(latitudeStart);
@@ -82,7 +85,7 @@ public class CzatListAdapter extends BaseAdapter {
         locationB.setLatitude(latitudeStop);
         locationB.setLongitude(longitudeStop);
 
-        float distance = locationA.distanceTo(locationB);
+        double distance = locationA.distanceTo(locationB);
         return distance;
 
     }

@@ -4,6 +4,12 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class App extends Application {
 
     private static App instance;
@@ -16,7 +22,13 @@ public class App extends Application {
 
     private CzatProperties czatProperties;
 
+    private LatLng myPosition;
+
+    private List<CzatListResponseDetails> czatListResponseDetailses = new ArrayList<>();
+
     public static volatile Handler applicationHandler = null;
+
+    public GoogleApiClient googleApiClient;
 
     public static App getInstance() {
         return instance;
@@ -54,14 +66,38 @@ public class App extends Application {
         this.czatProperties = czatProperties;
     }
 
+    public LatLng getMyPosition() {
+        return myPosition;
+    }
+
+    public void setMyPosition(LatLng myPosition) {
+        this.myPosition = myPosition;
+    }
+
+    public List<CzatListResponseDetails> getCzatListResponseDetailses() {
+        return czatListResponseDetailses;
+    }
+
+    public void setCzatListResponseDetailses(List<CzatListResponseDetails> czatListResponseDetailses) {
+        this.czatListResponseDetailses = czatListResponseDetailses;
+    }
+
+    public GoogleApiClient getGoogleApiClient() {
+        return googleApiClient;
+    }
+
+    public void setGoogleApiClient(GoogleApiClient googleApiClient) {
+        this.googleApiClient = googleApiClient;
+    }
+
     @Override
     public void onCreate() {
         instance = this;
         super.onCreate();
         applicationHandler = new Handler(getInstance().getMainLooper());
         NativeLoader.initNativeLibs(App.getInstance());
-
         sendURL = getResources().getString(R.string.IPSend);
+
     }
 
 

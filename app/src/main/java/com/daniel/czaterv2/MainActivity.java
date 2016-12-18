@@ -35,6 +35,7 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.model.LatLng;
 
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     .addApi(AppIndex.API)
                     .build();
         }
-
+        App.getInstance().setGoogleApiClient(googleApiClient);
         createLocationRequest();
 
         start.setOnClickListener(new View.OnClickListener() {
@@ -243,6 +244,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mLastLocation != null) {
             latitudeTextView.setText(String.valueOf(mLastLocation.getLatitude()));
             longitudeTextView.setText(String.valueOf(mLastLocation.getLongitude()));
+            App.getInstance().setMyPosition(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()));
         } else {
             Log.d("Else w OnConnected", "Ostatnia znana jest nie znana. ");
         }

@@ -6,8 +6,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,7 +21,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONObject;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
+import java.util.ArrayList;
+import java.util.List;
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowLongClickListener{
 
     private GoogleMap mMap;
     private LocationManager lm;
@@ -33,13 +36,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Bundle bundle;
     private Intent intent;
     private CzatProperties czatProperties;
+    private List<CzatListResponseDetails> czatListResponseDetailses = new ArrayList<>();
+    private LatLng myPosition;
     private JSONObject jsonObject;
     private int czatRadius = 0;
     private CzatProperties czat1;
     private CzatProperties czat2;
     private CzatProperties czat3;
     private Marker marker;
-    int i = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +52,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        checkPermissionLocalizationFine = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION);
-        checkPermissionLocalizationCoarse = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
+        czatListResponseDetailses = App.getInstance().getCzatListResponseDetailses();
+        myPosition = App.getInstance().getMyPosition();
         intent = getIntent();
         bundle = new Bundle();
         bundle = intent.getExtras();
@@ -61,20 +66,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onBackPressed(){
-        latitude = marker.getPosition().latitude;
-        longitude = marker.getPosition().longitude;
-        intent.putExtra("latitude",latitude);
-        intent.putExtra("longitude",longitude);
-        setResult(RESULT_OK);
-        finish();
-    }
-
-    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        LatLng pozycja2 = new LatLng(51.236658, 22.548534);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pozycja2, 10));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPosition, 10));
+        for (int i = 0; i<czatListResponseDetailses.size();i++){
+            Marker marker = mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(czatListResponseDetailses.get(i).getLatitude(),czatListResponseDetailses.get(i).getLongitude()))
+                    .title(czatListResponseDetailses.get(i).getName()));
+            Circle circle = mMap.addCircle(new CircleOptions()
+                    .center(new LatLng(czatListResponseDetailses.get(i).getLatitude(),czatListResponseDetailses.get(i).getLongitude()))
+                    .radius(czatListResponseDetailses.get(i).getRangeInMeters())
+                    .strokeColor(Color.RED)
+                    .strokeWidth(5));
+            onInfoWindowLongClick(marker);
+
+        }
+
+
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -148,5 +157,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .strokeWidth(3));
     }
 
+    @Override
+    public void onInfoWindowLongClick(Marker marker) {
+        Toast toast = Toast.makeText(getApplicationContext(),"Tu będzie przeniesienie do konkretnego czatu",Toast.LENGTH_SHORT);
+        toast.show();
+        Log.d("MapsActivity","Dlugie klikniecie markera");
+    }
 }
 

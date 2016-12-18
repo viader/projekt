@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -36,8 +37,8 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.maps.model.LatLng;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -52,16 +53,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CzatListActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private String macAddress;
-    static SecureRandom rnd = new SecureRandom();
     private TextView tv_user_name;
     private EditText et_user_name;
     private ListView chatList;
-    private Button czat_list_accept;
-    private Button sprawdz;
+    private Button goToMap;
     private Button addCzat;
-    private User user;
     private WebService webService;
     private UserAnonymous userAnonymous1;
     private GoogleApiClient googleApiClient;
@@ -80,10 +77,12 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         tv_user_name = (TextView) findViewById(R.id.tv_user_name);
         et_user_name = (EditText) findViewById(R.id.et_user_name);
         chatList = (ListView) findViewById(R.id.lv_czat_list);
-        czat_list_accept = (Button) findViewById(R.id.btn_accept_czat_list);
+        goToMap = (Button) findViewById(R.id.btn_goToMap);
         addCzat = (Button) findViewById(R.id.btn_addCzat);
         getAnonymousUserName();
-        if (googleApiClient == null) {
+        checkPermision();
+        getCzatList();
+        if (App.getInstance().getGoogleApiClient() == null) {
             googleApiClient = new GoogleApiClient
                     .Builder(this)
                     .addConnectionCallbacks(this)
@@ -92,14 +91,23 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                     .addApi(AppIndex.API)
                     .build();
         }
+        else{
+            googleApiClient = App.getInstance().getGoogleApiClient();
+        }
+        createLocationRequest();
 
         adapter = new CzatListAdapter(CzatListActivity.this, listChats);
         chatList.setAdapter(adapter);
-
-        czat_list_accept.setOnClickListener(new View.OnClickListener() {
+        chatList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                chatList.getItemAtPosition(position);
+            }
+        });
+        goToMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                button_on_click();
+                goToMapClick();
             }
         });
         addCzat.setOnClickListener(new View.OnClickListener() {
@@ -110,26 +118,19 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         });
     }
 
+    private void chatListClick() {
+        Toast tost = Toast.makeText(getApplicationContext(), "Tutaj będzie przeniesienie do czatu", Toast.LENGTH_SHORT);
+        tost.show();
+    }
+
     private void addCzatOnClick() {
         Intent intent = new Intent(this, AddCzatActivity.class);
         startActivity(intent);
     }
 
-    // // // // // // // ZATWIERDZENIE WYBRANEGO CZATU
-    private void button_on_click() {
-        User user = new User(et_user_name.getText().toString());
-        Intent intent = new Intent(this, CzatActivity.class);
-        String message = et_user_name.getText().toString();
-        intent.putExtra("message", message);
+    private void goToMapClick() {
+        Intent intent = new Intent(this, MapsActivity.class);
         startActivity(intent);
-    }
-    // ** ** ** ** ** ** ** ** ** ** ** **
-
-    String randomString(int len) {
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++)
-            sb.append(AB.charAt(rnd.nextInt(AB.length())));
-        return sb.toString();
     }
 
     private void getMacAdress() {
@@ -201,6 +202,7 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                 listChats.clear();
                 listChats.addAll(chats.getChats());
                 adapter.notifyDataSetChanged();
+                App.getInstance().setCzatListResponseDetailses(listChats);
 
                 if (listChats.isEmpty()) {
                     Log.d("CzatListActivity", "Brak elementów");
@@ -214,72 +216,6 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                 Log.d("CzatListActivity", "Failure");
             }
         });
-//        ArrayAdapter arrayAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,arrayList.);
-//        chatList.setAdapter(arrayAdapter);
-
-
-//        buildRetrofit();
-//        final Call<List<CzatListResponseDetails>> getCzatList = webService.getChatList(new CzatListRequest(latitude, longitude));
-//        getCzatList.enqueue(new Callback<List<CzatListResponseDetails>>() {
-//            @Override
-//            public void onResponse(Call<List<CzatListResponseDetails>> call, Response<List<CzatListResponseDetails>> response) {
-//                Log.d("CzatListActivity","Response");
-//                listChats = response.body();
-//                Log.d("CzatListActivity",listChats.toString());
-//                int listSize = listChats.size();
-//                String[] nazwy = new String[listSize];
-//                for (int i=0;i<=listSize;i++){
-//                    nazwy[i] = listChats.get(i).getName();
-//                    Log.d("CzatListActivity -Nazwy",nazwy[i]);
-//                }
-//
-//                arrayList.addAll(listChats);
-//                ArrayAdapter arrayAdapter = new ArrayAdapter(getApplicationContext(),R.layout.my_simple_list_view,arrayList);
-//                chatList.setAdapter(arrayAdapter);
-//            }
-//
-//            @Override
-//            public void onFailure(Call<List<CzatListResponseDetails>> call, Throwable t) {
-//                Log.d("CzatListActivity","Failure");
-//            }
-//        });
-//        ArrayAdapter arrayAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,arrayList.);
-//        chatList.setAdapter(arrayAdapter);
-
-
-//        buildRetrofit();
-//        Call<CzatListResponseDetails> getCzatList = webService.getChatList(new CzatListRequest(latitude, longitude));
-//        getCzatList.enqueue(new Callback<CzatListResponseDetails>() {
-//            @Override
-//            public void onResponse(Call<CzatListResponseDetails> call, Response<CzatListResponseDetails> response) {
-//                Log.d("CzatListActivity", "Response");
-//                CzatListResponseDetails czatListResponseDetails = response.body();
-//
-//                if (czatListResponseDetails.getName() != null) {
-//                    Log.d("CzatListActivity", czatListResponseDetails.getName());
-//                } else {
-//                    Log.d("CzatListActivity", "Response is null");
-//                }
-//                Log.d("CzatListActivity",listChats.toString());
-//                int listSize = listChats.size();
-//                String[] nazwy = new String[listSize];
-//                for (int i=0;i<=listSize;i++){
-//                    nazwy[i] = listChats.get(i).getName();
-//                    Log.d("CzatListActivity -Nazwy",nazwy[i]);
-//                }
-//
-//                arrayList.addAll(listChats);
-//                ArrayAdapter arrayAdapter = new ArrayAdapter(getApplicationContext(),R.layout.my_simple_list_view,arrayList);
-//                chatList.setAdapter(arrayAdapter);
-//            }
-//
-//            @Override
-//            public void onFailure(Call<CzatListResponseDetails> call, Throwable t) {
-//
-//            }
-//        });
-//        ArrayAdapter arrayAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,arrayList.);
-//        chatList.setAdapter(arrayAdapter);
     }
 
     protected void addExampleChats() {
@@ -306,8 +242,8 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
     protected void createLocationRequest() {
         Log.d("CzatListActivity - clr", "CzatListActivity");
         locationRequest = new LocationRequest();
-        locationRequest.setInterval(7000);
-        locationRequest.setFastestInterval(3500);
+        locationRequest.setInterval(5000);
+        locationRequest.setFastestInterval(2500);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
         final PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
@@ -339,15 +275,12 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
     @Override
     protected void onResume() {
         super.onResume();
-        getCzatList();
     }
 
     @Override
     protected void onStart() {
         googleApiClient.connect();
         super.onStart();
-        checkPermision();
-        createLocationRequest();
         AppIndex.AppIndexApi.start(googleApiClient, getIndexApiAction());
     }
 
@@ -408,6 +341,7 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         if (mLastLocation != null) {
             latitude = mLastLocation.getLatitude();
             longitude = mLastLocation.getLongitude();
+            App.getInstance().setMyPosition(new LatLng(latitude, longitude));
             Toast toast = Toast.makeText(getApplicationContext(), "Longitude: " + String.valueOf(longitude), Toast.LENGTH_LONG);
             Toast toast2 = Toast.makeText(getApplicationContext(), "Latitude: " + String.valueOf(latitude), Toast.LENGTH_LONG);
             toast.show();
