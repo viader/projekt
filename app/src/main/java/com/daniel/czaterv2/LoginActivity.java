@@ -110,12 +110,14 @@ public class LoginActivity extends Activity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Wprowadz login!").setTitle("Brak loginu");
             AlertDialog dialog = builder.create();
+            dialog.show();
 //            Toast tost = Toast.makeText(getApplicationContext(), "Wprowadz login", Toast.LENGTH_SHORT);
 //            tost.show();
         } else if (pass.getText().toString().length() <= 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Wprowadz hasło!").setTitle("Brak hasła");
             AlertDialog dialog = builder.create();
+            dialog.show();
 //            Toast tost = Toast.makeText(getApplicationContext(), "Wprowadz hasło", Toast.LENGTH_SHORT);
 //            tost.show();
         } else {

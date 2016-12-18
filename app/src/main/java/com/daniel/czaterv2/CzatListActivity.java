@@ -193,7 +193,7 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
 
     private void getCzatList() {
         buildRetrofit();
-        Call<Chats> getCzatList = webService.getChatList(new CzatListRequest(latitude, longitude));
+        Call<Chats> getCzatList = webService.getChatList(new CzatListRequest(App.getInstance().getMyPosition().latitude, App.getInstance().getMyPosition().longitude));
         getCzatList.enqueue(new Callback<Chats>() {
             @Override
             public void onResponse(Call<Chats> call, Response<Chats> response) {

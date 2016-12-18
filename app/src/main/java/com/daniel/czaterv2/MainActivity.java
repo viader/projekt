@@ -41,39 +41,30 @@ import com.google.android.gms.maps.model.LatLng;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     final static int LOGIN = 555;
+    final static int NETWORK_PERMISSIONS = 444;
+    final static int ACCESS_COARSE_LOCATION_PERMISSIONS = 666;
+    final static int ACCESS_FINE_LOCATION_PERMISSIONS = 777;
     final static int REGISTRY = 2;
     private Button start;
     private Button gps_on;
-    private Button go_to_map;
     private Button login;
     private Button registry;
-    private Button checkGPSPosition;
     private LocationManager locationManager;
     private User user;
-    private UserAnonymous userAnonymous;
-    private String name;
-    private String pass;
-    private String userString;
-    private GPSManager gpsManager;
-    private AnonymousSend anonymousSend;
-    private double lng = 0;
-    private double lat = 0;
     private LocationRequest locationRequest;
-    private Boolean mRequestingLocationUpdates;
     private TextView gps_info;
     private TextView latitudeTextView;
     private TextView longitudeTextView;
     protected static final int REQUEST_CHECK_SETTINGS = 1;
     private GoogleApiClient googleApiClient;
-    private int checkPermissionLocalizationFine;
-    private int checkPermissionLocalizationCoarse;
+
+    public MainActivity() {
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        checkPermissionLocalizationFine = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION);
-        checkPermissionLocalizationCoarse = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         gps_info = (TextView) findViewById(R.id.tv_gpsinfo);
         latitudeTextView = (TextView) findViewById(R.id.tv_latitude);
@@ -82,19 +73,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         gps_on = (Button) findViewById(R.id.btn_main_gps_enabled);
         login = (Button) findViewById(R.id.btn_login);
         registry = (Button) findViewById(R.id.btn_registry);
-
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient
-                    .Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .addApi(AppIndex.API)
-                    .build();
-        }
+        createGoogleApiClient();
         App.getInstance().setGoogleApiClient(googleApiClient);
         createLocationRequest();
-
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,8 +102,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
     }
 
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent intent) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         if (requestCode == LOGIN) {
             if (resultCode == RESULT_OK) {
@@ -135,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.d("Dupa", "Nie weszło w IFA w Main");
             }
         }
-        if (requestCode == REQUEST_CHECK_SETTINGS){
+        if (requestCode == REQUEST_CHECK_SETTINGS) {
             switch (resultCode) {
                 case Activity.RESULT_OK:
                     Log.d("MainActivity", "User agreed to make required location settings changes.");
@@ -206,58 +186,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         startActivityForResult(intent, REGISTRY);
     }
 
-    public void checkPermision() {
+    private void checkPermision() {
         int checkPermissionLocalizationFine = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION);
         int checkPermissionLocalizationCoarse = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
+        int checkPermissionInternet = ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_NETWORK_STATE);
         if (checkPermissionLocalizationFine != 0) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
 
             } else {
-                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 777);
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, ACCESS_FINE_LOCATION_PERMISSIONS);
             }
         }
         if (checkPermissionLocalizationCoarse != 0) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
 
             } else {
-                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 666);
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, ACCESS_COARSE_LOCATION_PERMISSIONS);
             }
         }
-    }
+        if (checkPermissionInternet != 0) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_NETWORK_STATE)) {
 
-    // ---------------------- GOOGLE CLIENT API  ---------------------------
-    @Override
-    public void onConnected(@Nullable Bundle connectionHint) {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_NETWORK_STATE}, NETWORK_PERMISSIONS);
+            }
         }
-        Log.d("GoogleApiClient", "Metoda onConnected");
-        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                googleApiClient);
-        if (mLastLocation != null) {
-            latitudeTextView.setText(String.valueOf(mLastLocation.getLatitude()));
-            longitudeTextView.setText(String.valueOf(mLastLocation.getLongitude()));
-            App.getInstance().setMyPosition(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()));
-        } else {
-            Log.d("Else w OnConnected", "Ostatnia znana jest nie znana. ");
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     public Action getIndexApiAction() {
@@ -303,7 +256,61 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
     }
-// ---------------------- END GOOGLE CLIENT API  ---------------------------
+
+    private void setStartButtonEnabled(){
+        if (App.getInstance().getMyPosition() == null) {
+            start.setEnabled(false);
+        }
+        else{
+            start.setEnabled(true);
+        }
+    }
+
+    private void createGoogleApiClient(){
+        if (googleApiClient == null) {
+            googleApiClient = new GoogleApiClient
+                    .Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .addApi(AppIndex.API)
+                    .build();
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle connectionHint) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Log.d("GoogleApiClient", "Metoda onConnected");
+        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                googleApiClient);
+        if (mLastLocation != null) {
+            latitudeTextView.setText(String.valueOf(mLastLocation.getLatitude()));
+            longitudeTextView.setText(String.valueOf(mLastLocation.getLongitude()));
+            App.getInstance().setMyPosition(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
+        } else {
+            Log.d("Else w OnConnected", "Ostatnia znana jest nie znana. ");
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
@@ -340,6 +347,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
                 return;
             }
+            case 555: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast tost = Toast.makeText(this, "Uprawnienia NETWORK przyznane", Toast.LENGTH_SHORT);
+                    tost.show();
+                } else {
+                    Toast tost = Toast.makeText(this, "Uprawnienia NETWORK nieprzyznane", Toast.LENGTH_SHORT);
+                    tost.show();
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
             // other 'case' lines to check for other
             // permissions this app might request
         }
@@ -348,6 +369,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
+        setStartButtonEnabled();
     }
 
     @Override
