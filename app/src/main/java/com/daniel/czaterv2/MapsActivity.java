@@ -2,12 +2,8 @@ package com.daniel.czaterv2;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,26 +15,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowLongClickListener{
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowLongClickListener {
 
     private GoogleMap mMap;
-    private LocationManager lm;
-    private double latitude, longitude;
-    private Location location;
-    private GPSManager gpsManager;
-    private int checkPermissionLocalizationFine;
-    private int checkPermissionLocalizationCoarse;
     private Bundle bundle;
     private Intent intent;
-    private CzatProperties czatProperties;
     private List<CzatListResponseDetails> czatListResponseDetailses = new ArrayList<>();
     private LatLng myPosition;
-    private JSONObject jsonObject;
     private int czatRadius = 0;
     private CzatProperties czat1;
     private CzatProperties czat2;
@@ -68,6 +54,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnInfoWindowLongClickListener(this);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPosition, 10));
         for (int i = 0; i<czatListResponseDetailses.size();i++){
             Marker marker = mMap.addMarker(new MarkerOptions()
@@ -78,31 +65,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .radius(czatListResponseDetailses.get(i).getRangeInMeters())
                     .strokeColor(Color.RED)
                     .strokeWidth(5));
-            onInfoWindowLongClick(marker);
-
         }
 
-
-
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                mMap.clear();
-                if (czatRadius == 0) {
-                    czatRadius = 1000;
-                }
-                Log.d("Radius",String.valueOf(czatRadius));
-
-                marker = mMap.addMarker(new MarkerOptions()
-                        .position(latLng)
-                        .title("Tutaj będzie centrum czatu"));
-                Circle circle = mMap.addCircle(new CircleOptions()
-                        .center(latLng)
-                        .radius(czatRadius)
-                        .strokeColor(Color.RED)
-                        .strokeWidth(3));
-            }
-        });
+//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//            @Override
+//            public void onMapClick(LatLng latLng) {
+//                if (czatRadius == 0) {
+//                    czatRadius = 1000;
+//                }
+//                if (marker != null){
+//                    marker.remove();
+//                }
+//                Log.d("Radius",String.valueOf(czatRadius));
+//
+//                marker = mMap.addMarker(new MarkerOptions()
+//                        .position(latLng)
+//                        .title("Tutaj będzie centrum czatu"));
+//                Circle circle = mMap.addCircle(new CircleOptions()
+//                        .center(latLng)
+//                        .radius(czatRadius)
+//                        .strokeColor(Color.RED)
+//                        .strokeWidth(5));
+//            }
+//        });
     }
 
     //------------------- KONIEC OnMapReady ----------------------------------
@@ -159,9 +144,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onInfoWindowLongClick(Marker marker) {
-        Toast toast = Toast.makeText(getApplicationContext(),"Tu będzie przeniesienie do konkretnego czatu",Toast.LENGTH_SHORT);
-        toast.show();
-        Log.d("MapsActivity","Dlugie klikniecie markera");
+
     }
 }
 

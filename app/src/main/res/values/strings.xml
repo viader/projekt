@@ -43,4 +43,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
+    <string name="welcomeMessage">"Witaj w aplikacji Czater. Możesz pisać jako anonimowy użytkownik i wówczas
+        zostanie nadany Ci losowy login, który będziesz mógł zmienić. Możesz też się zarejestrować i mieć na
+        stałe przypisay login. Udanych konwersacji"</string>
 </resources>

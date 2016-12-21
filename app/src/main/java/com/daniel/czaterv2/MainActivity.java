@@ -1,5 +1,6 @@
 package com.daniel.czaterv2;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -29,6 +30,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.internal.zzh;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -45,16 +47,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     final static int ACCESS_COARSE_LOCATION_PERMISSIONS = 666;
     final static int ACCESS_FINE_LOCATION_PERMISSIONS = 777;
     final static int REGISTRY = 2;
-    private Button start;
-    private Button gps_on;
-    private Button login;
-    private Button registry;
+    private Button start, gps_on, login, registry, info;
     private LocationManager locationManager;
     private User user;
     private LocationRequest locationRequest;
-    private TextView gps_info;
-    private TextView latitudeTextView;
-    private TextView longitudeTextView;
+    private TextView gps_info, latitudeTextView, longitudeTextView;
     protected static final int REQUEST_CHECK_SETTINGS = 1;
     private GoogleApiClient googleApiClient;
 
@@ -73,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         gps_on = (Button) findViewById(R.id.btn_main_gps_enabled);
         login = (Button) findViewById(R.id.btn_login);
         registry = (Button) findViewById(R.id.btn_registry);
+        info = (Button) findViewById(R.id.btn_info);
         createGoogleApiClient();
         App.getInstance().setGoogleApiClient(googleApiClient);
         createLocationRequest();
@@ -98,6 +96,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public void onClick(View v) {
                 registry();
+            }
+        });
+        info.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showWelcomeScreen();
             }
         });
     }
@@ -278,9 +282,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    private void showWelcomeScreen (){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Witaj").setMessage(getString(R.string.welcomeMessage)).setNeutralButton("OK", new zzh() {
+            @Override
+            protected void zzavx() {
+
+            }
+        });
+    }
+
     @Override
     public void onConnected(@Nullable Bundle connectionHint) {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -297,6 +313,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             latitudeTextView.setText(String.valueOf(mLastLocation.getLatitude()));
             longitudeTextView.setText(String.valueOf(mLastLocation.getLongitude()));
             App.getInstance().setMyPosition(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
+            setStartButtonEnabled();
         } else {
             Log.d("Else w OnConnected", "Ostatnia znana jest nie znana. ");
         }

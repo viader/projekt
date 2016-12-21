@@ -74,7 +74,6 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
         czatName = (EditText) findViewById(R.id.et_czatName);
         maxUsers = (SeekBar) findViewById(R.id.sb_maxUsers);
         czatRange = (SeekBar) findViewById(R.id.sb_range);
-        defineCzatLocation = (Button) findViewById(R.id.btn_defineCzatCenter);
         acceptNewCzat = (Button) findViewById(R.id.btn_acceptNewCzat);
         maxUsersView = (TextView) findViewById(R.id.tv_sbMaxUsersView);
         rangeView = (TextView) findViewById(R.id.tv_sbRangeView);
@@ -91,15 +90,7 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
         intent = getIntent();
 
 
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient
-                    .Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .addApi(AppIndex.API)
-                    .build();
-        }
+        App.getInstance().getGoogleApiClient();
         createLocationRequest();
 
         maxUsers.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -137,22 +128,6 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
 
             }
         });
-
-//        defineCzatLocation.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                String czatNameString = czatName.getText().toString();
-//
-//                if (czatNameString.length() <= 0) {
-//                    Toast tost = Toast.makeText(getApplicationContext(), "Wprowadz nazwe czatu", Toast.LENGTH_SHORT);
-//                    tost.show();
-//                } else {
-//                    Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-//                    intent.putExtra("range", czatRangeInt);
-//                    startActivityForResult(intent, GET_CZAT_CENTER_INTENT);
-//                }
-//            }
-//        });
 
         acceptNewCzat.setOnClickListener(new View.OnClickListener() {
             @Override

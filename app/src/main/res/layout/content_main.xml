@@ -80,15 +80,15 @@
         android:layout_alignParentStart="true" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="35dp"
-        android:text="@string/gpsenabled"
-        android:id="@+id/btn_main_gps_enabled"
-        android:background="@color/buttonColor"
-        android:layout_alignTop="@+id/tv_latitude"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+    style="?android:attr/buttonStyleSmall"
+    android:layout_width="wrap_content"
+    android:layout_height="35dp"
+    android:text="@string/gpsenabled"
+    android:id="@+id/btn_main_gps_enabled"
+    android:background="@color/buttonColor"
+    android:layout_alignTop="@+id/tv_latitude"
+    android:layout_alignParentRight="true"
+    android:layout_alignParentEnd="true" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -112,5 +112,15 @@
         android:layout_below="@+id/btn_main_start"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:text="info"
+        android:id="@+id/btn_info"
+        android:background="@color/buttonColor"
+        android:layout_alignBottom="@+id/tv_longitude"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
