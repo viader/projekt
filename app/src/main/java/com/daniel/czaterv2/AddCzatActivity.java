@@ -3,12 +3,9 @@ package com.daniel.czaterv2;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -22,7 +19,6 @@ import android.widget.Toast;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -49,14 +45,12 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class AddCzatActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class AddCzatActivity extends Activity  {
 
     private EditText czatName;
     private TextView maxUsersView, rangeView, czatPositionLongitude, czatPositionLatitude;
-    private Button defineCzatLocation, acceptNewCzat;
-    private CzatProperties czatProperties;
+    private Button acceptNewCzat;
     private JSONObject jsonObject;
-    private Boolean dataComplete;
     private SeekBar maxUsers, czatRange;
     private GoogleApiClient googleApiClient;
     int maxUsersInt, czatRangeInt;
@@ -87,10 +81,12 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
         czatRange.setLeft(1);
         czatRange.setRight(10000);
         czatRange.setProgress(100);
+        longitude = App.getInstance().getMyPosition().longitude;
+        latitude = App.getInstance().getMyPosition().latitude;
         intent = getIntent();
 
 
-        App.getInstance().getGoogleApiClient();
+        googleApiClient = App.getInstance().getGoogleApiClient();
         createLocationRequest();
 
         maxUsers.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -204,41 +200,6 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
         }
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        Log.d("AddCzatActivity", "Metoda onConnected - GAC");
-        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                googleApiClient);
-        if (mLastLocation != null) {
-            latitude = mLastLocation.getLatitude();
-            longitude = mLastLocation.getLongitude();
-            czatPositionLongitude.setText("Longitude: " + String.valueOf(longitude));
-            czatPositionLatitude.setText("Latitude: " + String.valueOf(latitude));
-
-        } else {
-            Log.d("Else w OnConnected", "Ostatnia znana jest nie znana. ");
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
 
     protected void createLocationRequest() {
         locationRequest = new LocationRequest();
