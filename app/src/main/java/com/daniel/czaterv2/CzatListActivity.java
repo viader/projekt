@@ -103,6 +103,8 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 chatList.getItemAtPosition(position);
+                Intent intent = new Intent(getApplicationContext(), CzatActivity.class);
+                startActivity(intent);
             }
         });
         goToMap.setOnClickListener(new View.OnClickListener() {

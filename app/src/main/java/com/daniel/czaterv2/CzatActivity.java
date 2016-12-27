@@ -3,7 +3,7 @@ package com.daniel.czaterv2;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -26,12 +26,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
-public class CzatActivity extends ActionBarActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
+public class CzatActivity extends AppCompatActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
 
     private ListView chatListView;
     private EditText chatEditText1;
     private ArrayList<ChatMessage> chatMessages;
-    private ImageView enterChatView1, emojiButton;
+    private ImageView enterChatView1;
     private ChatListAdapter listAdapter;
     private EmojiView emojiView;
     private SizeNotifierRelativeLayout sizeNotifierRelativeLayout;
