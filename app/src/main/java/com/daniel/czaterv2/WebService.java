@@ -2,7 +2,9 @@ package com.daniel.czaterv2;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface WebService {
 
@@ -18,8 +20,8 @@ public interface WebService {
     @POST("/puszek/addChat")
     Call<AddCzatResponse> addCzat (@Body AddCzatRequest AddCzatRequest);
 
-    @POST("/puszek/getChatList")
-    Call <Chats> getChatList (@Body CzatListRequest czatListRequest);
+    @GET("/puszek/getChatList")
+    Call <Chats> getChatList (@Query("latitude") double latitude, @Query("longitude") double longitude );
 
 
 }

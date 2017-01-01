@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         registry = (Button) findViewById(R.id.btn_registry);
         info = (Button) findViewById(R.id.btn_info);
         createGoogleApiClient();
-        App.getInstance().setGoogleApiClient(googleApiClient);
         createLocationRequest();
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -280,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     .addApi(AppIndex.API)
                     .build();
         }
+        App.getInstance().setGoogleApiClient(googleApiClient);
     }
 
     private void showWelcomeScreen (){

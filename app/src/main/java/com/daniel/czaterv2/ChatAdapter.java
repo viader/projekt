@@ -19,13 +19,13 @@ import java.util.ArrayList;
 /**
  * Created by madhur on 17/01/15.
  */
-public class ChatListAdapter extends BaseAdapter {
+public class ChatAdapter extends BaseAdapter {
 
     private ArrayList<ChatMessage> chatMessages;
     private Context context;
     public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("HH:mm");
 
-    public ChatListAdapter(ArrayList<ChatMessage> chatMessages, Context context) {
+    public ChatAdapter(ArrayList<ChatMessage> chatMessages, Context context) {
         this.chatMessages = chatMessages;
         this.context = context;
 
@@ -102,8 +102,6 @@ public class ChatListAdapter extends BaseAdapter {
                 holder2.messageStatus.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_single_tick));
 
             }
-
-
         }
 
 

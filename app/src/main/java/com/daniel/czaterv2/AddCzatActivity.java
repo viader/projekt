@@ -86,11 +86,11 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
         maxUsers.setRight(10);
         czatRange.setLeft(1);
         czatRange.setRight(10000);
-        czatRange.setProgress(100);
+        czatRange.setScrollBarDefaultDelayBeforeFade(5000);
         intent = getIntent();
 
 
-        App.getInstance().getGoogleApiClient();
+        getGoogleClientApi();
         createLocationRequest();
 
         maxUsers.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -143,8 +143,8 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
                     addCzatRequest.setRange(czatRangeInt);
                     addCzatRequest.setName(czatName.getText().toString());
                     addCzatRequest.setMaxUsers(maxUsersInt);
-                    addCzatRequest.setLongitude(longitude);
-                    addCzatRequest.setLatitude(latitude);
+                    addCzatRequest.setLongitude(App.getInstance().getMyPosition().longitude);
+                    addCzatRequest.setLatitude(App.getInstance().getMyPosition().latitude);
                     final String headerInfo = App.getInstance().getUser().getToken();
 
                     HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
@@ -191,6 +191,10 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
             }
         });
         intent = new Intent(this,CzatListActivity.class);
+    }
+
+    private void getGoogleClientApi() {
+        googleApiClient = App.getInstance().getGoogleApiClient();
     }
 
     @Override

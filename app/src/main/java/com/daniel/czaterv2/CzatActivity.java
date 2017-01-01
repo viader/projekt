@@ -3,7 +3,7 @@ package com.daniel.czaterv2;
 import android.app.Activity;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -18,6 +18,7 @@ import com.daniel.czaterv2.model.Status;
 import com.daniel.czaterv2.model.UserType;
 import com.daniel.czaterv2.widgets.EmojiView;
 import com.daniel.czaterv2.widgets.SizeNotifierRelativeLayout;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,20 +26,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import ua.naiksoftware.stomp.client.StompClient;
 
-public class CzatActivity extends ActionBarActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
 
-    private ListView chatListView;
-    private EditText chatEditText1;
-    private ArrayList<ChatMessage> chatMessages;
-    private ImageView enterChatView1, emojiButton;
-    private ChatListAdapter listAdapter;
+public class CzatActivity extends AppCompatActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
+
+    private ChatAdapter listAdapter;
     private EmojiView emojiView;
     private SizeNotifierRelativeLayout sizeNotifierRelativeLayout;
     private boolean showingEmoji;
     private int keyboardHeight;
     private boolean keyboardVisible;
     private WindowManager.LayoutParams windowLayoutParams;
+    private ListView chatListView;
+    private EditText chatEditText1;
+    private ArrayList<ChatMessage> chatMessages;
+    private ImageView enterChatView1, emojiButton;
+    private StompClient mStompClient;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
 
     private EditText.OnKeyListener keyListener = new View.OnKeyListener() {
@@ -69,8 +74,8 @@ public class CzatActivity extends ActionBarActivity implements SizeNotifierRelat
     private ImageView.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-
-            if(v==enterChatView1) {
+            if(v==enterChatView1)
+            {
                 sendMessage(chatEditText1.getText().toString(), UserType.OTHER);
             }
             chatEditText1.setText("");
@@ -106,34 +111,11 @@ public class CzatActivity extends ActionBarActivity implements SizeNotifierRelat
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_czat);
-
-        AndroidUtilities.statusBarHeight = getStatusBarHeight();
-
         chatMessages = new ArrayList<>();
         chatListView = (ListView) findViewById(R.id.chat_list_view);
         chatEditText1 = (EditText) findViewById(R.id.chat_edit_text1);
         enterChatView1 = (ImageView) findViewById(R.id.enter_chat1);
-
-        // Hide the emoji on click of edit text
-//        chatEditText1.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (showingEmoji)
-//                    hideEmojiPopup();
-//            }
-//        });
-//
-//
-//        emojiButton = (ImageView)findViewById(R.id.emojiButton);
-//
-//        emojiButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                showEmojiPopup(!showingEmoji);
-//            }
-//        });
-
-        listAdapter = new ChatListAdapter(chatMessages, this);
+        listAdapter = new ChatAdapter(chatMessages, this);
         chatListView.setAdapter(listAdapter);
         chatEditText1.setOnKeyListener(keyListener);
         enterChatView1.setOnClickListener(clickListener);
@@ -192,153 +174,6 @@ public class CzatActivity extends ActionBarActivity implements SizeNotifierRelat
         return this;
     }
 
-
-    /**
-     * Show or hide the emoji popup
-     *
-     * @param show
-     */
-//    private void showEmojiPopup(boolean show) {
-//        showingEmoji = show;
-//
-//        if (show) {
-//            if (emojiView == null) {
-//                if (getActivity() == null) {
-//                    return;
-//                }
-//                emojiView = new EmojiView(getActivity());
-//
-//                emojiView.setListener(new EmojiView.Listener() {
-//                    public void onBackspace() {
-//                        chatEditText1.dispatchKeyEvent(new KeyEvent(0, 67));
-//                    }
-//
-//                    public void onEmojiSelected(String symbol) {
-//                        int i = chatEditText1.getSelectionEnd();
-//                        if (i < 0) {
-//                            i = 0;
-//                        }
-//                        try {
-//                            CharSequence localCharSequence = Emoji.replaceEmoji(symbol, chatEditText1.getPaint().getFontMetricsInt(), AndroidUtilities.dp(20));
-//                            chatEditText1.setText(chatEditText1.getText().insert(i, localCharSequence));
-//                            int j = i + localCharSequence.length();
-//                            chatEditText1.setSelection(j, j);
-//                        } catch (Exception e) {
-//                            Log.e(Constants.TAG, "Error showing emoji");
-//                        }
-//                    }
-//                });
-//
-//
-//                windowLayoutParams = new WindowManager.LayoutParams();
-//                windowLayoutParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
-//                if (Build.VERSION.SDK_INT >= 21) {
-//                    windowLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
-//                } else {
-//                    windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-//                    windowLayoutParams.token = getActivity().getWindow().getDecorView().getWindowToken();
-//                }
-//                windowLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-//            }
-//
-//            final int currentHeight;
-//
-//            if (keyboardHeight <= 0)
-//                keyboardHeight = App.getInstance().getSharedPreferences("emoji", 0).getInt("kbd_height", AndroidUtilities.dp(200));
-//
-//            currentHeight = keyboardHeight;
-//
-//            WindowManager wm = (WindowManager) App.getInstance().getSystemService(Activity.WINDOW_SERVICE);
-//
-//            windowLayoutParams.height = currentHeight;
-//            windowLayoutParams.width = AndroidUtilities.displaySize.x;
-//
-//            try {
-//                if (emojiView.getParent() != null) {
-//                    wm.removeViewImmediate(emojiView);
-//                }
-//            } catch (Exception e) {
-//                Log.e(Constants.TAG, e.getMessage());
-//            }
-//
-//            try {
-//                wm.addView(emojiView, windowLayoutParams);
-//            } catch (Exception e) {
-//                Log.e(Constants.TAG, e.getMessage());
-//                return;
-//            }
-//
-//            if (!keyboardVisible) {
-//                if (sizeNotifierRelativeLayout != null) {
-//                    sizeNotifierRelativeLayout.setPadding(0, 0, 0, currentHeight);
-//                }
-//
-//                return;
-//            }
-//
-//        }
-//        else {
-//            removeEmojiWindow();
-//            if (sizeNotifierRelativeLayout != null) {
-//                sizeNotifierRelativeLayout.post(new Runnable() {
-//                    public void run() {
-//                        if (sizeNotifierRelativeLayout != null) {
-//                            sizeNotifierRelativeLayout.setPadding(0, 0, 0, 0);
-//                        }
-//                    }
-//                });
-//            }
-//        }
-//
-//
-//    }
-
-
-    /**
-     * Remove emoji window
-     */
-//    private void removeEmojiWindow() {
-//        if (emojiView == null) {
-//            return;
-//        }
-//        try {
-//            if (emojiView.getParent() != null) {
-//                WindowManager wm = (WindowManager) App.getInstance().getSystemService(Context.WINDOW_SERVICE);
-//                wm.removeViewImmediate(emojiView);
-//            }
-//        } catch (Exception e) {
-//            Log.e(Constants.TAG, e.getMessage());
-//        }
-//    }
-
-
-
-    /**
-     * Hides the emoji popup
-     */
-//    public void hideEmojiPopup() {
-//        if (showingEmoji) {
-//            showEmojiPopup(false);
-//        }
-//    }
-//
-//    /**
-//     * Check if the emoji popup is showing
-//     *
-//     * @return
-//     */
-//    public boolean isEmojiPopupShowing() {
-//        return showingEmoji;
-//    }
-//
-//
-//
-//    /**
-//     * Updates emoji views when they are complete loading
-//     *
-//     * @param id
-//     * @param args
-//     */
     @Override
     public void didReceivedNotification(int id, Object... args) {
         if (id == NotificationCenter.emojiDidLoaded) {
@@ -416,19 +251,9 @@ public class CzatActivity extends ActionBarActivity implements SizeNotifierRelat
      * Get the system status bar height
      * @return
      */
-    public int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
-    }
 
     @Override
     protected void onPause() {
         super.onPause();
-
-//        hideEmojiPopup();
     }
 }

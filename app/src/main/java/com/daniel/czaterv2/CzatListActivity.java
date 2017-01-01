@@ -79,6 +79,7 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         chatList = (ListView) findViewById(R.id.lv_czat_list);
         goToMap = (Button) findViewById(R.id.btn_goToMap);
         addCzat = (Button) findViewById(R.id.btn_addCzat);
+        createGoogleApiClient();
         getAnonymousUserName();
         checkPermision();
         getCzatList();
@@ -193,14 +194,15 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
 
     private void getCzatList() {
         buildRetrofit();
-        Call<Chats> getCzatList = webService.getChatList(new CzatListRequest(App.getInstance().getMyPosition().latitude, App.getInstance().getMyPosition().longitude));
+        Call<Chats> getCzatList = webService.getChatList(App.getInstance().getMyPosition().latitude, App.getInstance().getMyPosition().longitude);
         getCzatList.enqueue(new Callback<Chats>() {
             @Override
             public void onResponse(Call<Chats> call, Response<Chats> response) {
                 Chats chats = response.body();
                 Log.d("CzatListActivity", "Response");
                 listChats.clear();
-                listChats.addAll(chats.getChats());
+                listChats.add(new CzatListResponseDetails("1","TEST",51.00,23.33,5000,8));
+                //listChats.addAll(chats.getChats());
                 adapter.notifyDataSetChanged();
                 App.getInstance().setCzatListResponseDetailses(listChats);
 
@@ -321,6 +323,19 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                 ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 666);
             }
         }
+    }
+
+    private void createGoogleApiClient(){
+        if (googleApiClient == null) {
+            googleApiClient = new GoogleApiClient
+                    .Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .addApi(AppIndex.API)
+                    .build();
+        }
+        App.getInstance().setGoogleApiClient(googleApiClient);
     }
 
     @Override
