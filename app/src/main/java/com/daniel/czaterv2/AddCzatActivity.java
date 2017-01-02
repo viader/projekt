@@ -3,12 +3,9 @@ package com.daniel.czaterv2;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -22,7 +19,6 @@ import android.widget.Toast;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -34,8 +30,6 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.Gson;
-
-import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -49,14 +43,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class AddCzatActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class AddCzatActivity extends Activity {
 
     private EditText czatName;
     private TextView maxUsersView, rangeView, czatPositionLongitude, czatPositionLatitude;
-    private Button defineCzatLocation, acceptNewCzat;
-    private CzatProperties czatProperties;
-    private JSONObject jsonObject;
-    private Boolean dataComplete;
+    private Button acceptNewCzat;
     private SeekBar maxUsers, czatRange;
     private GoogleApiClient googleApiClient;
     int maxUsersInt, czatRangeInt;
@@ -79,20 +70,27 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
         rangeView = (TextView) findViewById(R.id.tv_sbRangeView);
         czatPositionLatitude = (TextView) findViewById(R.id.tv_addNewChatLatitude);
         czatPositionLongitude = (TextView) findViewById(R.id.tv_addNewChatLongitude);
-        jsonObject = new JSONObject();
         maxUsersInt = 2;
         czatRangeInt = 1000;
         maxUsers.setLeft(1);
         maxUsers.setRight(10);
         czatRange.setLeft(1);
         czatRange.setRight(10000);
+<<<<<<< HEAD
         czatRange.setScrollBarDefaultDelayBeforeFade(5000);
         intent = getIntent();
 
 
         getGoogleClientApi();
+=======
+        czatRange.setProgress(5000);
+        longitude = App.getInstance().getMyPosition().longitude;
+        latitude = App.getInstance().getMyPosition().latitude;
+        intent = getIntent();
+        googleApiClient = App.getInstance().getGoogleApiClient();
+>>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
         createLocationRequest();
-
+        setPosition();
         maxUsers.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -175,7 +173,7 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
                         @Override
                         public void onResponse(Call<AddCzatResponse> call, Response<AddCzatResponse> response) {
                             Log.d("AddCzatActivity", response.toString());
-                            Toast toast = Toast.makeText(getApplicationContext(),"Czat został pomyślnie dodany",Toast.LENGTH_LONG);
+                            Toast toast = Toast.makeText(getApplicationContext(), "Czat został pomyślnie dodany", Toast.LENGTH_LONG);
                             toast.show();
                             setResult(RESULT_OK,intent);
                             finish();
@@ -189,7 +187,11 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
                 }
             }
         });
+<<<<<<< HEAD
 //        intent = new Intent(this,CzatListActivity.class);
+=======
+        intent = new Intent(this, CzatListActivity.class);
+>>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
     }
 
     private void getGoogleClientApi() {
@@ -200,6 +202,7 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
         czatPositionLatitude.setText("Latitude: " + String.valueOf(latitude));
     }
 
+<<<<<<< HEAD
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -236,6 +239,8 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
 
     }
 
+=======
+>>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
     protected void createLocationRequest() {
         locationRequest = new LocationRequest();
         locationRequest.setInterval(7000);
@@ -318,5 +323,10 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
                 ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 666);
             }
         }
+    }
+
+    public void setPosition() {
+        czatPositionLongitude.setText(String.valueOf(App.getInstance().getMyPosition().longitude));
+        czatPositionLatitude.setText(String.valueOf(App.getInstance().getMyPosition().latitude));
     }
 }

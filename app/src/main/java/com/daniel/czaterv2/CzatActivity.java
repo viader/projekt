@@ -34,10 +34,20 @@ import ua.naiksoftware.stomp.Stomp;
 import ua.naiksoftware.stomp.client.StompClient;
 import ua.naiksoftware.stomp.client.StompMessage;
 
+<<<<<<< HEAD
 
 public class CzatActivity extends AppCompatActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
 
     private ChatAdapter listAdapter;
+=======
+public class CzatActivity extends AppCompatActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
+
+    private ListView chatListView;
+    private EditText chatEditText1;
+    private ArrayList<ChatMessage> chatMessages;
+    private ImageView enterChatView1;
+    private ChatListAdapter listAdapter;
+>>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
     private EmojiView emojiView;
     private SizeNotifierRelativeLayout sizeNotifierRelativeLayout;
     private boolean showingEmoji;

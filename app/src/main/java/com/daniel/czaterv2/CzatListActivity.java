@@ -1,6 +1,7 @@
 package com.daniel.czaterv2;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -30,6 +31,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.internal.zzh;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -82,7 +84,17 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         checkPermision();
         getCzatList();
         if (App.getInstance().getGoogleApiClient() == null) {
+<<<<<<< HEAD
             createGoogleApiClient();
+=======
+            googleApiClient = new GoogleApiClient
+                    .Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .addApi(AppIndex.API)
+                    .build();
+>>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
         } else {
             googleApiClient = App.getInstance().getGoogleApiClient();
         }
@@ -94,6 +106,8 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 chatList.getItemAtPosition(position);
+                Intent intent = new Intent(getApplicationContext(), CzatActivity.class);
+                startActivity(intent);
             }
         });
         goToMap.setOnClickListener(new View.OnClickListener() {
@@ -190,10 +204,34 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                 Chats chats = response.body();
                 Log.d("CzatListActivity", "Response");
                 listChats.clear();
+<<<<<<< HEAD
                 listChats.add(new CzatListResponseDetails("1", "TEST", 51.00, 23.33, 5000, 8));
                 //listChats.addAll(chats.getChats());
                 adapter.notifyDataSetChanged();
                 App.getInstance().setCzatListResponseDetailses(listChats);
+=======
+                if (chats == null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                    builder.setTitle("Brak czatów").setMessage("Lista czatów jest pusta. Dodaj nowy").setNeutralButton("OK", new zzh() {
+                        @Override
+                        protected void zzavx() {
+
+                        }
+                    });
+                    builder.create();
+                } else {
+                    listChats.addAll(chats.getChats());
+                    adapter.notifyDataSetChanged();
+                    App.getInstance().setCzatListResponseDetailses(listChats);
+
+                    if (listChats.isEmpty()) {
+                        Log.d("CzatListActivity", "Brak elementów");
+                    } else {
+                        Log.d("CzatListActivity", listChats.toString());
+                    }
+                }
+
+>>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
             }
 
             @Override
