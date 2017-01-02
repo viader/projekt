@@ -177,35 +177,27 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
                             Log.d("AddCzatActivity", response.toString());
                             Toast toast = Toast.makeText(getApplicationContext(),"Czat został pomyślnie dodany",Toast.LENGTH_LONG);
                             toast.show();
-
+                            setResult(RESULT_OK,intent);
+                            finish();
                         }
 
                         @Override
                         public void onFailure(Call<AddCzatResponse> call, Throwable t) {
 
                         }
-
                     });
-
                 }
             }
         });
-        intent = new Intent(this,CzatListActivity.class);
+//        intent = new Intent(this,CzatListActivity.class);
     }
 
     private void getGoogleClientApi() {
         googleApiClient = App.getInstance().getGoogleApiClient();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent intent) {
-        if (requestCode == GET_CZAT_CENTER_INTENT) {
-            if (resultCode == RESULT_OK) {
-                intent = getIntent();
-                intent.getExtras();
-            }
-        }
+        latitude = App.getInstance().getMyPosition().latitude;
+        longitude = App.getInstance().getMyPosition().longitude;
+        czatPositionLongitude.setText("Longitude: " + String.valueOf(longitude));
+        czatPositionLatitude.setText("Latitude: " + String.valueOf(latitude));
     }
 
     @Override
@@ -224,8 +216,8 @@ public class AddCzatActivity extends Activity implements GoogleApiClient.Connect
         Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 googleApiClient);
         if (mLastLocation != null) {
-            latitude = mLastLocation.getLatitude();
-            longitude = mLastLocation.getLongitude();
+            latitude = App.getInstance().getMyPosition().latitude;
+            longitude = App.getInstance().getMyPosition().longitude;
             czatPositionLongitude.setText("Longitude: " + String.valueOf(longitude));
             czatPositionLatitude.setText("Latitude: " + String.valueOf(latitude));
 

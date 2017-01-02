@@ -18,15 +18,21 @@ import com.daniel.czaterv2.model.Status;
 import com.daniel.czaterv2.model.UserType;
 import com.daniel.czaterv2.widgets.EmojiView;
 import com.daniel.czaterv2.widgets.SizeNotifierRelativeLayout;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import org.java_websocket.WebSocket;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import rx.functions.Action1;
+import ua.naiksoftware.stomp.Stomp;
 import ua.naiksoftware.stomp.client.StompClient;
+import ua.naiksoftware.stomp.client.StompMessage;
 
 
 public class CzatActivity extends AppCompatActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
@@ -44,6 +50,7 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
     private ImageView enterChatView1, emojiButton;
     private StompClient mStompClient;
     private ObjectMapper objectMapper = new ObjectMapper();
+    private WebService webService;
 
 
     private EditText.OnKeyListener keyListener = new View.OnKeyListener() {
@@ -57,8 +64,7 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
 
                 EditText editText = (EditText) v;
 
-                if(v==chatEditText1)
-                {
+                if (v == chatEditText1) {
                     sendMessage(editText.getText().toString(), UserType.OTHER);
                 }
 
@@ -74,8 +80,7 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
     private ImageView.OnClickListener clickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if(v==enterChatView1)
-            {
+            if (v == enterChatView1) {
                 sendMessage(chatEditText1.getText().toString(), UserType.OTHER);
             }
             chatEditText1.setText("");
@@ -98,9 +103,9 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
 
         @Override
         public void afterTextChanged(Editable editable) {
-            if(editable.length()==0){
+            if (editable.length() == 0) {
                 enterChatView1.setImageResource(R.drawable.ic_chat_send);
-            }else{
+            } else {
                 enterChatView1.setImageResource(R.drawable.ic_chat_send_active);
             }
         }
@@ -124,53 +129,95 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
         sizeNotifierRelativeLayout.delegate = this;
 
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.emojiDidLoaded);
-    }
 
-    private void sendMessage(final String messageText, final UserType userType)
-    {
-        if(messageText.trim().length()==0)
-            return;
-
-        final ChatMessage message = new ChatMessage();
-        message.setMessageStatus(Status.SENT);
-        message.setMessageText(messageText);
-        message.setUserType(userType);
-        message.setMessageTime(new Date().getTime());
-        chatMessages.add(message);
-
-        if(listAdapter!=null)
-            listAdapter.notifyDataSetChanged();
-
-        // Mark message as delivered after one second
-
-        final ScheduledExecutorService exec = Executors.newScheduledThreadPool(1);
-
-        exec.schedule(new Runnable(){
+        Call<ChatDetailsResponse> call = webService.getChatDetails(123);
+        call.enqueue(new Callback<ChatDetailsResponse>()
+        {
             @Override
-            public void run(){
-                message.setMessageStatus(Status.DELIVERED);
+            public void onResponse(Call<ChatDetailsResponse> call, Response<ChatDetailsResponse> response)
+            {
+                for(MessageResponse messageResponse : response.body().getMessagesList()) {
+                    final ChatMessage message = new ChatMessage();
+                    message.setMessageStatus(Status.SENT);
+                    //message.setAuthor(messageResponse.getAuthor());
+                    message.setMessageText(messageResponse.getTextMessage());
+                    message.setMessageTime(message.getMessageTime());
+                    chatMessages.add(message);
+                }
+                listAdapter.notifyDataSetChanged();
+                scrollMyListViewToBottom();
+            }
 
-                final ChatMessage message = new ChatMessage();
-                message.setMessageStatus(Status.SENT);
-                message.setMessageText(messageText);
-                message.setUserType(UserType.SELF);
-                message.setMessageTime(new Date().getTime());
-                chatMessages.add(message);
-
-                CzatActivity.this.runOnUiThread(new Runnable() {
-                    public void run() {
-                        listAdapter.notifyDataSetChanged();
-                    }
-                });
-
+            @Override
+            public void onFailure(Call<ChatDetailsResponse> call, Throwable t)
+            {
 
             }
-        }, 1, TimeUnit.SECONDS);
+        });
 
+        mStompClient = Stomp.over(WebSocket.class, App.getSendURL());
+        mStompClient.connect();
+
+        mStompClient.topic("/topic/messages").subscribe(new Action1<StompMessage>() {
+            @Override
+            public void call(StompMessage topicMessage) {
+                final ChatMessage message = new ChatMessage();
+
+                message.setMessageStatus(Status.SENT);
+
+                try {
+                    MessageResponse response = objectMapper.readValue(topicMessage.getPayload(), MessageResponse.class);
+                    message.setMessageText(response.getTextMessage());
+//                    if (response.getAuthor().equals(headerInfo.login)) {
+//                        message.setUserType(UserType.SELF);
+//                    } else {
+//                        message.setUserType(UserType.OTHER);
+//                    }
+//                    message.setAuthor(response.getAuthor());
+//                    message.setMessageTime(response.getTime());
+                    chatMessages.add(message);
+                    CzatActivity.this.runOnUiThread(new Runnable() {
+                        public void run() {
+                            listAdapter.notifyDataSetChanged();
+                            scrollMyListViewToBottom();
+                        }
+                    });
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
-    private Activity getActivity()
-    {
+
+    private void sendMessage(final String messageText, final UserType userType) {
+        if (messageText.trim().length() == 0)
+            return;
+
+        MessageRequest messageRequest = new MessageRequest();
+//        messageRequest.setAuthor(headerInfo.login);
+//        messageRequest.setTokenContent(headerInfo.token);
+        messageRequest.setTextMessage(messageText);
+
+        try {
+            mStompClient.send("/app/chat", objectMapper.writeValueAsString(messageRequest)).subscribe();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void scrollMyListViewToBottom() {
+        chatListView.post(new Runnable() {
+            @Override
+            public void run() {
+                // Select the last row so it will scroll into view...
+                chatListView.setSelection(listAdapter.getCount() - 1);
+            }
+        });
+    }
+
+    private Activity getActivity() {
         return this;
     }
 
@@ -249,6 +296,7 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
 
     /**
      * Get the system status bar height
+     *
      * @return
      */
 

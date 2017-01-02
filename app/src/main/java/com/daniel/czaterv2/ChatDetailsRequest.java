@@ -10,6 +10,10 @@ public class ChatDetailsRequest {
     public ChatDetailsRequest() {
     }
 
+    public ChatDetailsRequest(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }

@@ -23,6 +23,11 @@ public interface WebService {
     @GET("/puszek/getChatList")
     Call <Chats> getChatList (@Query("latitude") double latitude, @Query("longitude") double longitude );
 
+    @GET("/puszek/getChatDetails")
+    Call <ChatDetailsResponse> getChatDetails (@Query("id") int id);
+
+
+
 
 }
 

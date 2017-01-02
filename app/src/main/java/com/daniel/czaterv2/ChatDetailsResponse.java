@@ -11,7 +11,7 @@ public class ChatDetailsResponse {
     double latitude;
     double longitude;
     int maxUsersNumber;
-    List<Messages> messagesList;
+    List<MessageResponse> messagesList;
     String name;
     int rangeInMeters;
 
@@ -51,11 +51,11 @@ public class ChatDetailsResponse {
         this.maxUsersNumber = maxUsersNumber;
     }
 
-    public List<Messages> getMessagesList() {
+    public List<MessageResponse> getMessagesList() {
         return messagesList;
     }
 
-    public void setMessagesList(List<Messages> messagesList) {
+    public void setMessagesList(List<MessageResponse> messagesList) {
         this.messagesList = messagesList;
     }
 

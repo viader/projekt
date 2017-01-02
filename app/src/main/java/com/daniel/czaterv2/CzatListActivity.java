@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -37,7 +36,6 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,20 +77,13 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         chatList = (ListView) findViewById(R.id.lv_czat_list);
         goToMap = (Button) findViewById(R.id.btn_goToMap);
         addCzat = (Button) findViewById(R.id.btn_addCzat);
-        createGoogleApiClient();
+
         getAnonymousUserName();
         checkPermision();
         getCzatList();
         if (App.getInstance().getGoogleApiClient() == null) {
-            googleApiClient = new GoogleApiClient
-                    .Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .addApi(AppIndex.API)
-                    .build();
-        }
-        else{
+            createGoogleApiClient();
+        } else {
             googleApiClient = App.getInstance().getGoogleApiClient();
         }
         createLocationRequest();
@@ -187,8 +178,6 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
 
         } catch (Exception e) {
             Log.d("MainActivity", e.toString());
-            userAnonymous1.setName("Nie pobrano na podstawie adresu MAC");
-            userAnonymous1.setToken("Jakiś token");
         }
     }
 
@@ -201,16 +190,10 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                 Chats chats = response.body();
                 Log.d("CzatListActivity", "Response");
                 listChats.clear();
-                listChats.add(new CzatListResponseDetails("1","TEST",51.00,23.33,5000,8));
+                listChats.add(new CzatListResponseDetails("1", "TEST", 51.00, 23.33, 5000, 8));
                 //listChats.addAll(chats.getChats());
                 adapter.notifyDataSetChanged();
                 App.getInstance().setCzatListResponseDetailses(listChats);
-
-                if (listChats.isEmpty()) {
-                    Log.d("CzatListActivity", "Brak elementów");
-                } else {
-                    Log.d("CzatListActivity", listChats.toString());
-                }
             }
 
             @Override
@@ -325,16 +308,14 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         }
     }
 
-    private void createGoogleApiClient(){
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient
-                    .Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .addApi(AppIndex.API)
-                    .build();
-        }
+    private void createGoogleApiClient() {
+        googleApiClient = new GoogleApiClient
+                .Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .addApi(AppIndex.API)
+                .build();
         App.getInstance().setGoogleApiClient(googleApiClient);
     }
 
@@ -349,21 +330,6 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
             return;
-        }
-        Log.d("AddCzatActivity", "Metoda onConnected - GAC");
-        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                googleApiClient);
-        if (mLastLocation != null) {
-            latitude = mLastLocation.getLatitude();
-            longitude = mLastLocation.getLongitude();
-            App.getInstance().setMyPosition(new LatLng(latitude, longitude));
-            Toast toast = Toast.makeText(getApplicationContext(), "Longitude: " + String.valueOf(longitude), Toast.LENGTH_LONG);
-            Toast toast2 = Toast.makeText(getApplicationContext(), "Latitude: " + String.valueOf(latitude), Toast.LENGTH_LONG);
-            toast.show();
-            toast2.show();
-
-        } else {
-            Log.d("Else w OnConnected", "Ostatnia znana jest nie znana. ");
         }
     }
 

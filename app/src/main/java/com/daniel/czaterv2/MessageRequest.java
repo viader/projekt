@@ -1,13 +1,15 @@
 package com.daniel.czaterv2;
 
 /**
- * Created by Daniel on 30.12.2016.
+ * Created by Daniel on 02.01.2017.
  */
+public class MessageRequest {
+    private String author;
+    private String textMessage;
+    private String tokenContent;
 
-public class Messages {
-    String author;
-    String textMessage;
-    String time;
+    public MessageRequest() {
+    }
 
     public String getAuthor() {
         return author;
@@ -25,15 +27,11 @@ public class Messages {
         this.textMessage = textMessage;
     }
 
-    public String getTime() {
-        return time;
+    public String getTokenContent() {
+        return tokenContent;
     }
 
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public Messages() {
-
+    public void setTokenContent(String tokenContent) {
+        this.tokenContent = tokenContent;
     }
 }

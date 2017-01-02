@@ -283,11 +283,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void showWelcomeScreen (){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Witaj").setMessage(getString(R.string.welcomeMessage)).setNeutralButton("OK", new zzh() {
             @Override
             protected void zzavx() {
-
+                AlertDialog dialog = builder.create();
             }
         });
     }
