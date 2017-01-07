@@ -1,11 +1,13 @@
 package com.daniel.czaterv2;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -25,101 +27,38 @@ import org.java_websocket.WebSocket;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import rx.functions.Action1;
 import ua.naiksoftware.stomp.Stomp;
 import ua.naiksoftware.stomp.client.StompClient;
 import ua.naiksoftware.stomp.client.StompMessage;
 
-<<<<<<< HEAD
-
 public class CzatActivity extends AppCompatActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
 
+    private static String TAG = "Czat Activity";
     private ChatAdapter listAdapter;
-=======
-public class CzatActivity extends AppCompatActivity implements SizeNotifierRelativeLayout.SizeNotifierRelativeLayoutDelegate, NotificationCenter.NotificationCenterDelegate {
-
-    private ListView chatListView;
-    private EditText chatEditText1;
-    private ArrayList<ChatMessage> chatMessages;
-    private ImageView enterChatView1;
-    private ChatListAdapter listAdapter;
->>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
     private EmojiView emojiView;
     private SizeNotifierRelativeLayout sizeNotifierRelativeLayout;
     private boolean showingEmoji;
     private int keyboardHeight;
     private boolean keyboardVisible;
     private WindowManager.LayoutParams windowLayoutParams;
-    private ListView chatListView;
+    private ListView chatListView;      //Lista wiadomości
     private EditText chatEditText1;
     private ArrayList<ChatMessage> chatMessages;
     private ImageView enterChatView1, emojiButton;
     private StompClient mStompClient;
     private ObjectMapper objectMapper = new ObjectMapper();
     private WebService webService;
-
-
-    private EditText.OnKeyListener keyListener = new View.OnKeyListener() {
-        @Override
-        public boolean onKey(View v, int keyCode, KeyEvent event) {
-
-            // If the event is a key-down event on the "enter" button
-            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                // Perform action on key press
-
-                EditText editText = (EditText) v;
-
-                if (v == chatEditText1) {
-                    sendMessage(editText.getText().toString(), UserType.OTHER);
-                }
-
-                chatEditText1.setText("");
-
-                return true;
-            }
-            return false;
-
-        }
-    };
-
-    private ImageView.OnClickListener clickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (v == enterChatView1) {
-                sendMessage(chatEditText1.getText().toString(), UserType.OTHER);
-            }
-            chatEditText1.setText("");
-        }
-    };
-
-    private final TextWatcher watcher1 = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-        }
-
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-            if (chatEditText1.getText().toString().equals("")) {
-
-            } else {
-                enterChatView1.setImageResource(R.drawable.ic_chat_send);
-            }
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) {
-            if (editable.length() == 0) {
-                enterChatView1.setImageResource(R.drawable.ic_chat_send);
-            } else {
-                enterChatView1.setImageResource(R.drawable.ic_chat_send_active);
-            }
-        }
-    };
+    private Intent intent;
 
 
     @Override
@@ -137,40 +76,46 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
         chatEditText1.addTextChangedListener(watcher1);
         sizeNotifierRelativeLayout = (SizeNotifierRelativeLayout) findViewById(R.id.chat_layout);
         sizeNotifierRelativeLayout.delegate = this;
+        intent = getIntent();
+        String id = intent.getStringExtra("id");
+        buildRetrofit();
 
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.emojiDidLoaded);
 
-        Call<ChatDetailsResponse> call = webService.getChatDetails(123);
-        call.enqueue(new Callback<ChatDetailsResponse>()
-        {
+        Call<ChatDetailsResponse> call = webService.getChatDetails(new ChatDetailsRequest(id));
+        call.enqueue(new Callback<ChatDetailsResponse>() {
             @Override
-            public void onResponse(Call<ChatDetailsResponse> call, Response<ChatDetailsResponse> response)
-            {
-                for(MessageResponse messageResponse : response.body().getMessagesList()) {
-                    final ChatMessage message = new ChatMessage();
-                    message.setMessageStatus(Status.SENT);
-                    //message.setAuthor(messageResponse.getAuthor());
-                    message.setMessageText(messageResponse.getTextMessage());
-                    message.setMessageTime(message.getMessageTime());
-                    chatMessages.add(message);
+            public void onResponse(Call<ChatDetailsResponse> call, Response<ChatDetailsResponse> response) {
+                Log.d("CzatActivity", "onResponse - getChatDetails");
+                try {
+                    for (MessageResponse messageResponse : response.body().getMessagesList()) {
+                        final ChatMessage message = new ChatMessage();
+                        message.setMessageStatus(Status.SENT);
+                        //message.setAuthor(messageResponse.getAuthor());
+                        message.setMessageText(messageResponse.getTextMessage());
+                        message.setMessageTime(message.getMessageTime());
+                        chatMessages.add(message);
+                    }
+                } catch (Exception e) {
+                    Log.d("Exception", e.toString());
                 }
+
                 listAdapter.notifyDataSetChanged();
                 scrollMyListViewToBottom();
             }
 
             @Override
-            public void onFailure(Call<ChatDetailsResponse> call, Throwable t)
-            {
-
+            public void onFailure(Call<ChatDetailsResponse> call, Throwable t) {
+                Log.d("CzatActivity", "onFailure - getChatDetails");
             }
         });
 
-        mStompClient = Stomp.over(WebSocket.class, App.getSendURL());
+        mStompClient = Stomp.over(WebSocket.class, "ws://138.68.77.240:8080/puszek/chat/websocket");
         mStompClient.connect();
-
         mStompClient.topic("/topic/messages").subscribe(new Action1<StompMessage>() {
             @Override
             public void call(StompMessage topicMessage) {
+                Log.d("Stom Call", topicMessage.toString());
                 final ChatMessage message = new ChatMessage();
 
                 message.setMessageStatus(Status.SENT);
@@ -178,18 +123,21 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
                 try {
                     MessageResponse response = objectMapper.readValue(topicMessage.getPayload(), MessageResponse.class);
                     message.setMessageText(response.getTextMessage());
-//                    if (response.getAuthor().equals(headerInfo.login)) {
-//                        message.setUserType(UserType.SELF);
-//                    } else {
-//                        message.setUserType(UserType.OTHER);
-//                    }
+                    Log.d("Czat Activity", "Try");
+                    if (response.getAuthor().equals(App.getInstance().getUser().getLogin())) {
+                        message.setUserType(UserType.SELF);
+                    } else {
+                        message.setUserType(UserType.OTHER);
+                    }
 //                    message.setAuthor(response.getAuthor());
-//                    message.setMessageTime(response.getTime());
+                    message.setMessageTime(Long.parseLong(response.getTime()));
                     chatMessages.add(message);
+
                     CzatActivity.this.runOnUiThread(new Runnable() {
                         public void run() {
                             listAdapter.notifyDataSetChanged();
                             scrollMyListViewToBottom();
+                            Log.d("Czat Activity", "runOnUiThread");
                         }
                     });
 
@@ -206,13 +154,15 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
             return;
 
         MessageRequest messageRequest = new MessageRequest();
-//        messageRequest.setAuthor(headerInfo.login);
-//        messageRequest.setTokenContent(headerInfo.token);
+        messageRequest.setAuthor(App.getInstance().getUser().getName());
+        messageRequest.setTokenContent(App.getInstance().getUser().getToken());
         messageRequest.setTextMessage(messageText);
 
         try {
             mStompClient.send("/app/chat", objectMapper.writeValueAsString(messageRequest)).subscribe();
+            Log.d("CzatAct - sendMessage", "Wiadomosc wyslana");
         } catch (JsonProcessingException e) {
+            Log.d("CzatAct - sendMessage", e.toString());
             e.printStackTrace();
         }
     }
@@ -294,8 +244,83 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
 //        } else if (!keyboardVisible && keyboardVisible != oldValue && showingEmoji) {
 //            showEmojiPopup(false);
 //        }
-
     }
+
+    private void buildRetrofit() {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .readTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .addInterceptor(logging)
+                .build();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(App.getSendURL())
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
+                .build();
+        webService = retrofit.create(WebService.class);
+    }
+
+
+    private EditText.OnKeyListener keyListener = new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+
+            // If the event is a key-down event on the "enter" button
+            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                // Perform action on key press
+
+                EditText editText = (EditText) v;
+
+                if (v == chatEditText1) {
+                    sendMessage(editText.getText().toString(), UserType.OTHER);
+                }
+
+                chatEditText1.setText("");
+
+                return true;
+            }
+            return false;
+
+        }
+    };
+
+    private ImageView.OnClickListener clickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (v == enterChatView1) {
+                sendMessage(chatEditText1.getText().toString(), UserType.OTHER);
+            }
+            chatEditText1.setText("");
+        }
+    };
+
+    private final TextWatcher watcher1 = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+            if (chatEditText1.getText().toString().equals("")) {
+
+            } else {
+                enterChatView1.setImageResource(R.drawable.ic_chat_send);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            if (editable.length() == 0) {
+                enterChatView1.setImageResource(R.drawable.ic_chat_send);
+            } else {
+                enterChatView1.setImageResource(R.drawable.ic_chat_send_active);
+            }
+        }
+    };
+
 
     @Override
     public void onDestroy() {

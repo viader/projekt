@@ -5,20 +5,20 @@ package com.daniel.czaterv2;
  */
 
 public class ChatDetailsRequest {
-    private int id;
+    private String id;
 
     public ChatDetailsRequest() {
     }
 
-    public ChatDetailsRequest(int id) {
+    public ChatDetailsRequest(String id) {
         this.id = id;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 }

@@ -31,7 +31,6 @@ public class ChatAdapter extends BaseAdapter {
 
     }
 
-
     @Override
     public int getCount() {
         return chatMessages.size();
@@ -103,7 +102,6 @@ public class ChatAdapter extends BaseAdapter {
 
             }
         }
-
 
         return v;
     }

@@ -14,7 +14,7 @@ public class App extends Application {
 
     private static App instance;
 
-    private static String sendURL;
+    private static String sendURL, endpoint;
 
     private User user;
 
@@ -90,6 +90,10 @@ public class App extends Application {
         this.googleApiClient = googleApiClient;
     }
 
+    public static String getEndpoint() {
+        return endpoint;
+    }
+
     @Override
     public void onCreate() {
         instance = this;
@@ -97,6 +101,8 @@ public class App extends Application {
         applicationHandler = new Handler(getInstance().getMainLooper());
         NativeLoader.initNativeLibs(App.getInstance());
         sendURL = getResources().getString(R.string.IPSend);
+        endpoint = getResources().getString(R.string.endpoint);
+
 
     }
 

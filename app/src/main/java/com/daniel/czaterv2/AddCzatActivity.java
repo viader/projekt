@@ -76,21 +76,17 @@ public class AddCzatActivity extends Activity {
         maxUsers.setRight(10);
         czatRange.setLeft(1);
         czatRange.setRight(10000);
-<<<<<<< HEAD
         czatRange.setScrollBarDefaultDelayBeforeFade(5000);
         intent = getIntent();
-
-
         getGoogleClientApi();
-=======
         czatRange.setProgress(5000);
         longitude = App.getInstance().getMyPosition().longitude;
         latitude = App.getInstance().getMyPosition().latitude;
         intent = getIntent();
         googleApiClient = App.getInstance().getGoogleApiClient();
->>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
         createLocationRequest();
         setPosition();
+        maxUsersInt = maxUsers.getProgress();
         maxUsers.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -175,7 +171,7 @@ public class AddCzatActivity extends Activity {
                             Log.d("AddCzatActivity", response.toString());
                             Toast toast = Toast.makeText(getApplicationContext(), "Czat został pomyślnie dodany", Toast.LENGTH_LONG);
                             toast.show();
-                            setResult(RESULT_OK,intent);
+                            setResult(RESULT_OK, intent);
                             finish();
                         }
 
@@ -187,11 +183,7 @@ public class AddCzatActivity extends Activity {
                 }
             }
         });
-<<<<<<< HEAD
-//        intent = new Intent(this,CzatListActivity.class);
-=======
         intent = new Intent(this, CzatListActivity.class);
->>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
     }
 
     private void getGoogleClientApi() {
@@ -202,45 +194,6 @@ public class AddCzatActivity extends Activity {
         czatPositionLatitude.setText("Latitude: " + String.valueOf(latitude));
     }
 
-<<<<<<< HEAD
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        Log.d("AddCzatActivity", "Metoda onConnected - GAC");
-        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                googleApiClient);
-        if (mLastLocation != null) {
-            latitude = App.getInstance().getMyPosition().latitude;
-            longitude = App.getInstance().getMyPosition().longitude;
-            czatPositionLongitude.setText("Longitude: " + String.valueOf(longitude));
-            czatPositionLatitude.setText("Latitude: " + String.valueOf(latitude));
-
-        } else {
-            Log.d("Else w OnConnected", "Ostatnia znana jest nie znana. ");
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-=======
->>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
     protected void createLocationRequest() {
         locationRequest = new LocationRequest();
         locationRequest.setInterval(7000);

@@ -82,11 +82,9 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
 
         getAnonymousUserName();
         checkPermision();
-        getCzatList();
+
         if (App.getInstance().getGoogleApiClient() == null) {
-<<<<<<< HEAD
             createGoogleApiClient();
-=======
             googleApiClient = new GoogleApiClient
                     .Builder(this)
                     .addConnectionCallbacks(this)
@@ -94,7 +92,6 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                     .addApi(LocationServices.API)
                     .addApi(AppIndex.API)
                     .build();
->>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
         } else {
             googleApiClient = App.getInstance().getGoogleApiClient();
         }
@@ -105,8 +102,10 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         chatList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                chatList.getItemAtPosition(position);
+                CzatListResponseDetails chatDetailsResponse = (CzatListResponseDetails) chatList.getItemAtPosition(position);
+
                 Intent intent = new Intent(getApplicationContext(), CzatActivity.class);
+                intent.putExtra("id",chatDetailsResponse.getId());
                 startActivity(intent);
             }
         });
@@ -197,19 +196,17 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
 
     private void getCzatList() {
         buildRetrofit();
-        Call<Chats> getCzatList = webService.getChatList(App.getInstance().getMyPosition().latitude, App.getInstance().getMyPosition().longitude);
+        Call<Chats> getCzatList = webService.getChatList(new CzatListRequest(App.getInstance().getMyPosition().latitude, App.getInstance().getMyPosition().longitude));
         getCzatList.enqueue(new Callback<Chats>() {
             @Override
             public void onResponse(Call<Chats> call, Response<Chats> response) {
                 Chats chats = response.body();
                 Log.d("CzatListActivity", "Response");
                 listChats.clear();
-<<<<<<< HEAD
-                listChats.add(new CzatListResponseDetails("1", "TEST", 51.00, 23.33, 5000, 8));
+                //listChats.add(new CzatListResponseDetails("1", "TEST", 51.00, 23.33, 5000, 8));
                 //listChats.addAll(chats.getChats());
                 adapter.notifyDataSetChanged();
                 App.getInstance().setCzatListResponseDetailses(listChats);
-=======
                 if (chats == null) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
                     builder.setTitle("Brak czatów").setMessage("Lista czatów jest pusta. Dodaj nowy").setNeutralButton("OK", new zzh() {
@@ -230,8 +227,6 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                         Log.d("CzatListActivity", listChats.toString());
                     }
                 }
-
->>>>>>> 02a9070b0748c88256bfc70d2da6360d5513cb74
             }
 
             @Override
@@ -239,27 +234,6 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
                 Log.d("CzatListActivity", "Failure");
             }
         });
-    }
-
-    protected void addExampleChats() {
-        CzatProperties czat1;
-        CzatProperties czat2;
-        CzatProperties czat3;
-
-        czat1 = new CzatProperties();
-        czat1.setName("Czat 1");
-        czat1.setRange(5000);
-        czat1.setMaxUsers(10);
-
-        czat2 = new CzatProperties();
-        czat2.setName("Czat 2");
-        czat2.setRange(10000);
-        czat2.setMaxUsers(10);
-
-        czat3 = new CzatProperties();
-        czat3.setName("Czat 3");
-        czat3.setRange(15000);
-        czat3.setMaxUsers(10);
     }
 
     protected void createLocationRequest() {
@@ -305,6 +279,7 @@ public class CzatListActivity extends Activity implements GoogleApiClient.Connec
         googleApiClient.connect();
         super.onStart();
         AppIndex.AppIndexApi.start(googleApiClient, getIndexApiAction());
+        getCzatList();
     }
 
     @Override

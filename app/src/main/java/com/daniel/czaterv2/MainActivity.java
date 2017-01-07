@@ -3,12 +3,15 @@ package com.daniel.czaterv2;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -110,9 +113,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (requestCode == LOGIN) {
             if (resultCode == RESULT_OK) {
                 user = App.getInstance().getUser();
-                Log.d("Name", user.getName());
+                Toast toast = Toast.makeText(getApplicationContext(), "Zostałeś poprawnie zalogowany", Toast.LENGTH_SHORT);
+                toast.show();
             } else if (resultCode == RESULT_CANCELED) {
-                Toast toast = Toast.makeText(getApplicationContext(), "Logowanie nie powiodło się", Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(getApplicationContext(), "Logowanie nie powiodło się", Toast.LENGTH_SHORT);
                 toast.show();
             } else {
                 Log.d("Dupa", "Nie weszło w IFA w Main");
@@ -160,23 +164,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void gps_enable() {
         Intent callGPSSettingIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         startActivity(callGPSSettingIntent);
-    }
-
-    private void checkGPS() {
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Toast.makeText(this, "GPS włączony", Toast.LENGTH_SHORT).show();
-            gps_info.setText("GPS ON");
-            start.setClickable(true);
-            start.setText("Rozpocznij");
-            start.setEnabled(true);
-        } else {
-            showGPSDisabledAlertToUser();
-            gps_info.setText("GPS OFF");
-            start.setClickable(false);
-            start.setText("Włącz GPS");
-            start.setEnabled(false);
-        }
     }
 
     private void login() {
@@ -255,13 +242,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         break;
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         break;
+
                 }
             }
         });
     }
 
     private void setStartButtonEnabled(){
-        if (App.getInstance().getMyPosition() == null) {
+        if (App.getInstance().getMyPosition() == null || !checkInternetConnect()) {
             start.setEnabled(false);
         }
         else{
@@ -287,11 +275,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         builder.setTitle("Witaj").setMessage(getString(R.string.welcomeMessage)).setNeutralButton("OK", new zzh() {
             @Override
             protected void zzavx() {
-                AlertDialog dialog = builder.create();
+
             }
         });
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private boolean checkInternetConnect(){
+        Context context = getApplicationContext();
+        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+        if(isConnected)
+            return true;
+        else
+            return false;
     }
 
     @Override
@@ -315,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             latitudeTextView.setText(String.valueOf(mLastLocation.getLatitude()));
             longitudeTextView.setText(String.valueOf(mLastLocation.getLongitude()));
             App.getInstance().setMyPosition(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
+            Log.d("Else w OnConnected", "Ostatnia znana jest znana. ");
             setStartButtonEnabled();
         } else {
             Log.d("Else w OnConnected", "Ostatnia znana jest nie znana. ");
