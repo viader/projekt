@@ -8,6 +8,7 @@ public class ChatMessage {
     private String messageText;
     private UserType userType;
     private Status messageStatus;
+    private long messageTime;
 
     public long getMessageTime() {
         return messageTime;
@@ -16,8 +17,6 @@ public class ChatMessage {
     public void setMessageTime(long messageTime) {
         this.messageTime = messageTime;
     }
-
-    private long messageTime;
 
     public void setMessageText(String messageText) {
         this.messageText = messageText;

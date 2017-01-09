@@ -23,7 +23,8 @@
         android:id="@+id/tv_newCzatName"
         android:textAlignment="center"
         android:gravity="center_vertical|center_horizontal"
-        android:textSize="16dp" />
+        android:textSize="16dp"
+        android:visibility="gone" />
 
     <EditText
         android:layout_width="match_parent"

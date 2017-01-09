@@ -52,12 +52,15 @@ public class CzatListAdapter extends BaseAdapter {
         }
 
         CzatListResponseDetails chat = chats.get(position);
-        holder.nameTv.setText(chat.getName());
-        holder.numberUserTv.setText("Użytkowników " + String.valueOf(chat.getMaxUsersNumber()));
-        holder.distance.setText(String.valueOf(distance(App.getInstance().getMyPosition().latitude,
+        double distance = distance(App.getInstance().getMyPosition().latitude,
                 App.getInstance().getMyPosition().longitude,
                 chat.getLatitude(),
-                chat.getLongitude())) + " metrów");
+                chat.getLongitude());
+        String distanceView = String.format("%.2f", distance);
+
+        holder.nameTv.setText(chat.getName());
+        holder.numberUserTv.setText("Użytkowników " + String.valueOf(chat.getMaxUsersNumber()));
+        holder.distance.setText(distanceView + " metrów");
         return convertView;
     }
 

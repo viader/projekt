@@ -77,9 +77,10 @@ public class AddCzatActivity extends Activity {
         czatRange.setLeft(1);
         czatRange.setRight(10000);
         czatRange.setScrollBarDefaultDelayBeforeFade(5000);
+        czatRange.setProgress(5000);
+        rangeView.setText("5000");
         intent = getIntent();
         getGoogleClientApi();
-        czatRange.setProgress(5000);
         longitude = App.getInstance().getMyPosition().longitude;
         latitude = App.getInstance().getMyPosition().latitude;
         intent = getIntent();

@@ -65,6 +65,9 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_czat);
+
+
+
         chatMessages = new ArrayList<>();
         chatListView = (ListView) findViewById(R.id.chat_list_view);
         chatEditText1 = (EditText) findViewById(R.id.chat_edit_text1);
@@ -123,6 +126,8 @@ public class CzatActivity extends AppCompatActivity implements SizeNotifierRelat
                 try {
                     MessageResponse response = objectMapper.readValue(topicMessage.getPayload(), MessageResponse.class);
                     message.setMessageText(response.getTextMessage());
+
+
                     Log.d("Czat Activity", "Try");
                     if (response.getAuthor().equals(App.getInstance().getUser().getLogin())) {
                         message.setUserType(UserType.SELF);
